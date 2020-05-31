@@ -9,6 +9,7 @@ Haoshen Hong <haoshen@stanford.edu>
 
 import sys
 
+
 class PartialParse(object):
     def __init__(self, sentence):
         """Initializes this partial parse.
@@ -31,10 +32,11 @@ class PartialParse(object):
         ###
         ### Note: The root token should be represented with the string "ROOT"
         ###
-
+        self.stack = ["ROOT"]
+        self.buffer = sentence[:]
+        self.dependencies = []
 
         ### END YOUR CODE
-
 
     def parse_step(self, transition):
         """Performs a single parse step by applying the given transition to this partial parse
@@ -44,13 +46,24 @@ class PartialParse(object):
                                 transition is a legal transition.
         """
         ### YOUR CODE HERE (~7-10 Lines)
-        ### TODO:
         ###     Implement a single parsing step, i.e. the logic for the following as
         ###     described in the pdf handout:
         ###         1. Shift
         ###         2. Left Arc
         ###         3. Right Arc
 
+        if transition == "S":
+            self.stack.append(self.buffer.pop(0))
+        else:
+            if transition == "LA":
+                head = self.stack[-1]
+                dependent = self.stack.pop(-2)
+            elif transition == "RA":
+                dependent = self.stack.pop()
+                head = self.stack[-1]
+            else:
+                raise ValueError("Transition", transition, "is not defined!")
+            self.dependencies.append((head, dependent))
 
         ### END YOUR CODE
 
@@ -66,6 +79,9 @@ class PartialParse(object):
         for transition in transitions:
             self.parse_step(transition)
         return self.dependencies
+
+    def is_finished(self):
+        return len(self.buffer) == 0 and len(self.stack) == 1
 
 
 def minibatch_parse(sentences, model, batch_size):
@@ -89,8 +105,6 @@ def minibatch_parse(sentences, model, batch_size):
     dependencies = []
 
     ### YOUR CODE HERE (~8-10 Lines)
-    ### TODO:
-    ###     Implement the minibatch parse algorithm as described in the pdf handout
     ###
     ###     Note: A shallow copy (as denoted in the PDF) can be made with the "=" sign in python, e.g.
     ###                 unfinished_parses = partial_parses[:].
@@ -102,7 +116,15 @@ def minibatch_parse(sentences, model, batch_size):
     ###             to remove objects from the `unfinished_parses` list. This will free the underlying memory that
     ###             is being accessed by `partial_parses` and may cause your code to crash.
 
-
+    partial_parses = [PartialParse(s) for s in sentences]
+    unfinished_parses = partial_parses[:]
+    while len(unfinished_parses):
+        minibatch = unfinished_parses[:batch_size]
+        transitions = model.predict(minibatch)
+        for i, partial_parse in enumerate(minibatch):
+            partial_parse.parse_step(transitions[i])
+        unfinished_parses = [p for p in unfinished_parses if not p.is_finished()]
+    dependencies = [p.dependencies for p in partial_parses]
     ### END YOUR CODE
 
     return dependencies
@@ -145,7 +167,7 @@ def test_parse():
     dependencies = PartialParse(sentence).parse(["S", "S", "S", "LA", "RA", "RA"])
     dependencies = tuple(sorted(dependencies))
     expected = (('ROOT', 'parse'), ('parse', 'sentence'), ('sentence', 'this'))
-    assert dependencies == expected,  \
+    assert dependencies == expected, \
         "parse test resulted in dependencies {:}, expected {:}".format(dependencies, expected)
     assert tuple(sentence) == ("parse", "this", "sentence"), \
         "parse test failed: the input sentence should not be modified"
@@ -155,7 +177,8 @@ def test_parse():
 class DummyModel(object):
     """Dummy model for testing the minibatch_parse function
     """
-    def __init__(self, mode = "unidirectional"):
+
+    def __init__(self, mode="unidirectional"):
         self.mode = mode
 
     def predict(self, partial_parses):
@@ -178,6 +201,7 @@ class DummyModel(object):
         """
         return [("RA" if len(pp.stack) % 2 == 0 else "LA") if len(pp.buffer) == 0 else "S"
                 for pp in partial_parses]
+
 
 def test_dependencies(name, deps, ex_deps):
     """Tests the provided dependencies match the expected dependencies"""
@@ -216,18 +240,20 @@ def test_minibatch_parse():
     deps = minibatch_parse(sentences, DummyModel(mode="interleave"), 1)
     test_dependencies("minibatch_parse", deps[0],
                       (('ROOT', 'is'), ('dependency', 'interleaving'),
-                      ('dependency', 'test'), ('is', 'dependency'), ('is', 'this')))
+                       ('dependency', 'test'), ('is', 'dependency'), ('is', 'this')))
     print("minibatch_parse test passed!")
 
 
 if __name__ == '__main__':
     args = sys.argv
     if len(args) != 2:
-        raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
+        raise Exception(
+            "You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
     elif args[1] == "part_c":
         test_parse_step()
         test_parse()
     elif args[1] == "part_d":
         test_minibatch_parse()
     else:
-        raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
+        raise Exception(
+            "You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
