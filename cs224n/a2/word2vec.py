@@ -57,10 +57,14 @@ def naiveSoftmaxLossAndGradient(
     ### Please use the provided softmax function (imported earlier in this file)
     ### This numerically stable implementation helps you avoid issues pertaining
     ### to integer overflow.
+
+    # FORWARD PROPAGATION
     y_hat = softmax(outsideVectors.dot(centerWordVec))
     loss = -np.log(y_hat[outsideWordIdx])
     y = np.zeros_like(y_hat)
     np.put(y, outsideWordIdx, 1)
+
+    # BACKPROPAGATION
     ceGrad = y_hat - y
     gradCenterVec = ceGrad.dot(outsideVectors)
     gradOutsideVecs = np.outer(ceGrad, centerWordVec)
@@ -110,18 +114,22 @@ def negSamplingLossAndGradient(
     u_o = outsideVectors[outsideWordIdx]
     k_vectors = outsideVectors[negSampleWordIndices]
 
-    loss = -np.log(sigmoid(u_o.dot(centerWordVec))) - np.sum(np.log(sigmoid(-k_vectors.dot(centerWordVec))))
+    # FORWARD PROPAGATION
+    y_o_hat = sigmoid(u_o.dot(centerWordVec))
+    y_k_hat = sigmoid(-k_vectors.dot(centerWordVec))
 
-    gradCenterVec = np.dot((sigmoid(u_o.dot(centerWordVec)) - 1), u_o) \
-                    - np.dot((sigmoid(-k_vectors.dot(centerWordVec)) - 1), k_vectors)
+    loss = -np.log(y_o_hat) - np.sum(np.log(y_k_hat))
+
+    # BACK PROPAGATION
+    gradCenterVec = np.dot((y_o_hat - 1), u_o) \
+                    - np.dot((y_k_hat - 1), k_vectors)
 
     gradOutsideVecs = np.zeros_like(outsideVectors)
-    gradOutsideVecs[outsideWordIdx] += np.dot((sigmoid(u_o.dot(centerWordVec)) - 1), centerWordVec)
+    gradOutsideVecs[outsideWordIdx] += np.dot((y_o_hat - 1), centerWordVec)
 
     np.add.at(gradOutsideVecs,
               negSampleWordIndices,
-              np.outer((1 - sigmoid(-outsideVectors[negSampleWordIndices]
-                                .dot(centerWordVec))), centerWordVec))
+              np.outer((1 - y_k_hat), centerWordVec))
 
     ### END YOUR CODE
 
