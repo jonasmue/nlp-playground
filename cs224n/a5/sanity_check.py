@@ -6,6 +6,7 @@ CS224N 2019-20: Homework 5
 sanity_check.py: sanity checks for assignment 5
 Usage:
     sanity_check.py 1e
+    sanity_check.py 1f
     sanity_check.py 1h
     sanity_check.py 2a
     sanity_check.py 2b
@@ -24,6 +25,7 @@ from typing import List, Tuple, Dict, Set, Union
 from tqdm import tqdm
 from utils import pad_sents_char, batch_iter, read_corpus
 from vocab import Vocab, VocabEntry
+from highway import Highway
 
 from char_decoder import CharDecoder
 from nmt_model import NMT
@@ -69,6 +71,26 @@ def question_1e_sanity_check():
 
     print("Sanity Check Passed for Question 1e: To Input Tensor Char!")
     print("-"*80)
+
+def question_1f_sanity_check():
+    print("-" * 80)
+    print("Running Sanity Check for Question 1f: Highway Network")
+    print("-" * 80)
+    embedding_dimension = 5
+    batch_size = 10
+    highway = Highway(embedding_dimension)
+    input_vector = torch.rand(embedding_dimension)
+    input_tensor = torch.rand((batch_size, embedding_dimension))
+    print("Running test vector and tensor through network...")
+    output_vector = highway(input_vector)
+    output_tensor = highway(input_tensor)
+    print("Checking shapes of output...")
+    assert output_vector.shape == input_vector.shape, "Output vector shape is incorrect: it should be:\n {} but is:\n {}".format(input_vector.shape, output_vector.shape)
+    assert output_tensor.shape == input_tensor.shape, "Output tensor shape is incorrect: it should be:\n {} but is:\n {}".format(input_tensor.shape, output_tensor.shape)
+
+    print("Sanity Check Passed for Question 1f: Highway Network!")
+    print("-" * 80)
+
 
 def question_1h_sanity_check(model):
     """ Sanity check for model_embeddings.py
@@ -169,6 +191,8 @@ def main():
 
     if args['1e']:
         question_1e_sanity_check()
+    elif args['1f']:
+        question_1f_sanity_check()
     elif args['1h']:
         question_1h_sanity_check(model)
     elif args['2a']:
