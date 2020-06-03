@@ -34,8 +34,11 @@ class CharDecoder(nn.Module):
         @returns dec_hidden (tuple(Tensor, Tensor)): internal state of the LSTM after reading the input characters. A tuple of two tensors of shape (1, batch, hidden_size)
         """
         ### YOUR CODE HERE for part 2a
-        ### TODO - Implement the forward pass of the character decoder.
-
+        ### Implement the forward pass of the character decoder.
+        y_emb = self.decoderCharEmb(input)
+        h, dec_hidden = self.charDecoder(y_emb, dec_hidden)
+        scores = self.char_output_projection(h)
+        return scores, dec_hidden
         ### END YOUR CODE
 
     def train_forward(self, char_sequence, dec_hidden=None):
@@ -47,13 +50,21 @@ class CharDecoder(nn.Module):
         @returns The cross-entropy loss (Tensor), computed as the *sum* of cross-entropy losses of all the words in the batch.
         """
         ### YOUR CODE HERE for part 2b
-        ### TODO - Implement training forward pass.
+        ### Implement training forward pass.
         ###
         ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss. Check vocab.py to find the padding token's index.
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} (e.g., <START>,m,u,s,i,c,<END>). Read the handout about how to construct input and target sequence of CharDecoderLSTM.
         ###       - Carefully read the documentation for nn.CrossEntropyLoss and our handout to see what this criterion have already included:
         ###             https://pytorch.org/docs/stable/nn.html#crossentropyloss
+        padding_index = self.target_vocab.char2id["<pad>"]
+        input_sequence = char_sequence[:-1]
+        target_sequence = char_sequence[1:]
 
+        logits, dec_hidden = self.forward(input_sequence, dec_hidden)
+        criterion = nn.CrossEntropyLoss(ignore_index=padding_index, reduction="sum")
+        loss = criterion(logits.permute(0, -1, 1), target_sequence)
+
+        return loss
         ### END YOUR CODE
 
     def decode_greedy(self, initialStates, device, max_length=21):
@@ -67,7 +78,7 @@ class CharDecoder(nn.Module):
         """
 
         ### YOUR CODE HERE for part 2c
-        ### TODO - Implement greedy decoding.
+        ### Implement greedy decoding.
         ### Hints:
         ###      - Use initialStates to get batch_size.
         ###      - Use target_vocab.char2id and target_vocab.id2char to convert between integers and characters
@@ -75,6 +86,25 @@ class CharDecoder(nn.Module):
         ###      - You may find torch.argmax or torch.argmax useful
         ###      - We use curly brackets as start-of-word and end-of-word characters. That is, use the character '{' for <START> and '}' for <END>.
         ###        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
+        batch_size = initialStates[0].size(1)
+        output_words = []
+        current_chars = torch.tensor([[self.target_vocab.start_of_word] * batch_size], device=device)
+        dec_hidden = initialStates
+        for _ in range(max_length):
+            scores, dec_hidden = self.forward(current_chars, dec_hidden)
+            current_chars = torch.argmax(scores, dim=-1)
+            output_words.append(current_chars)
 
+        word_finished = [False] * batch_size
+        decoded_words = ["" for _ in range(batch_size)]
+        for character_tensor in output_words:
+            for batch_idx, character_id_tensor in enumerate(character_tensor[0]):
+                character_id = character_id_tensor.item()
+                if character_id == self.target_vocab.end_of_word or word_finished[batch_idx]:
+                    word_finished[batch_idx] = True
+                    continue
+                decoded_char = self.target_vocab.id2char[character_id]
+                decoded_words[batch_idx] += decoded_char
+        return decoded_words
         ### END YOUR CODE
 
