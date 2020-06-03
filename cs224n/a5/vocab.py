@@ -162,7 +162,7 @@ class VocabEntry(object):
 
         char_indices = self.words2charindices(sents)
         padded_char_indices = pad_sents_char(char_indices, self.char_pad)
-        sents_var = torch.tensor(padded_char_indices).permute(1, 0, -1)
+        sents_var = torch.tensor(padded_char_indices, device=device).permute(1, 0, -1)
         return sents_var
         ### END YOUR CODE
 
