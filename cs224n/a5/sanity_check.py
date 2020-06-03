@@ -7,6 +7,7 @@ sanity_check.py: sanity checks for assignment 5
 Usage:
     sanity_check.py 1e
     sanity_check.py 1f
+    sanity_check.py 1g
     sanity_check.py 1h
     sanity_check.py 2a
     sanity_check.py 2b
@@ -25,10 +26,11 @@ from typing import List, Tuple, Dict, Set, Union
 from tqdm import tqdm
 from utils import pad_sents_char, batch_iter, read_corpus
 from vocab import Vocab, VocabEntry
-from highway import Highway
 
 from char_decoder import CharDecoder
 from nmt_model import NMT
+from highway import Highway
+from cnn import CNN
 
 
 import torch
@@ -89,6 +91,31 @@ def question_1f_sanity_check():
     assert output_tensor.shape == input_tensor.shape, "Output tensor shape is incorrect: it should be:\n {} but is:\n {}".format(input_tensor.shape, output_tensor.shape)
 
     print("Sanity Check Passed for Question 1f: Highway Network!")
+    print("-" * 80)
+
+def question_1g_sanity_check():
+    print("-" * 80)
+    print("Running Sanity Check for Question 1g: Convolutional Network")
+    print("-" * 80)
+    char_embedding_dimension = 5
+    word_embedding_dimension = 10
+    m_word = 20
+    batch_size = 10
+    kernel_size = 5
+    padding = 1
+    cnn = CNN(char_embedding_dimension, word_embedding_dimension, m_word, kernel_size, padding)
+    single_input = torch.rand((1, char_embedding_dimension, m_word))
+    batch_input = torch.rand((batch_size, char_embedding_dimension, m_word))
+    print("Running single input and batch input through network...")
+    single_output = cnn(single_input)
+    batch_output = cnn(batch_input)
+    print("Checking shapes of output...")
+    single_output_expected_size = [1, word_embedding_dimension]
+    batch_output_expected_size = [batch_size, word_embedding_dimension]
+    assert list(single_output.size()) == single_output_expected_size, "Output shape is incorrect: it should be:\n {} but is:\n {}".format(single_output_expected_size, list(single_output.size()))
+    assert list(batch_output.size()) == batch_output_expected_size, "Output shape is incorrect: it should be:\n {} but is:\n {}".format(batch_output_expected_size, list(batch_output.size()))
+
+    print("Sanity Check Passed for Question 1g: Convolutional Network!")
     print("-" * 80)
 
 
@@ -193,6 +220,8 @@ def main():
         question_1e_sanity_check()
     elif args['1f']:
         question_1f_sanity_check()
+    elif args['1g']:
+        question_1g_sanity_check()
     elif args['1h']:
         question_1h_sanity_check(model)
     elif args['2a']:
