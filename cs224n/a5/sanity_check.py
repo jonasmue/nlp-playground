@@ -103,7 +103,7 @@ def question_1g_sanity_check():
     batch_size = 10
     kernel_size = 5
     padding = 1
-    cnn = CNN(char_embedding_dimension, word_embedding_dimension, m_word, kernel_size, padding)
+    cnn = CNN(char_embedding_dimension, word_embedding_dimension, kernel_size, padding)
     single_input = torch.rand((1, char_embedding_dimension, m_word))
     batch_input = torch.rand((batch_size, char_embedding_dimension, m_word))
     print("Running single input and batch input through network...")
