@@ -80,7 +80,6 @@ class NMT(nn.Module):
         # Convert list of lists into tensors
 
         ### YOUR CODE HERE for part 1i
-        ### TODO:
         ###     Modify the code lines above as needed to fetch the character-level tensor
         ###     to feed into encode() and decode(). You should:
         ###     - Keep `target_padded` from A4 code above for predictions
@@ -88,6 +87,14 @@ class NMT(nn.Module):
         ###     - Add `target_padded_chars` for character level padded encodings for target
         ###     - Modify calls to encode() and decode() to use the character level encodings
 
+        source_padded_chars = self.vocab.src.to_input_tensor_char(source, device=self.device)
+        target_padded_chars = self.vocab.tgt.to_input_tensor_char(target, device=self.device)
+
+        target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)  # Tensor: (tgt_len, b)
+
+        enc_hiddens, dec_init_state = self.encode(source_padded_chars, source_lengths)
+        enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
+        combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded_chars)
         ### END YOUR CODE
 
         P = F.log_softmax(self.target_vocab_projection(combined_outputs), dim=-1)
@@ -177,6 +184,8 @@ class NMT(nn.Module):
             dec_state, o_t, _ = self.step(Ybar_t, dec_state, enc_hiddens, enc_hiddens_proj, enc_masks)
             combined_outputs.append(o_t)
             o_prev = o_t
+
+        combined_outputs = torch.stack(combined_outputs)
 
         return combined_outputs
 

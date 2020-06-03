@@ -28,6 +28,8 @@ class CNN(nn.Module):
         """
         m_word = input.size(-1)
         x_conv = self.conv_layer(input)
-        x_conv_out = torch.max_pool1d(torch.relu(x_conv),
-                                      kernel_size=m_word - self.kernel_size + 1).squeeze(-1)
+        #kernel_size = m_word - self.kernel_size + 1
+        #x_conv_out = torch.max_pool1d(torch.relu(x_conv), kernel_size=kernel_size).squeeze(-1)
+        # -> broken for small kernel sizes... 😔
+        x_conv_out = x_conv.max(dim=-1)[0]
         return x_conv_out
