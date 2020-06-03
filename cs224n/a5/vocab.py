@@ -149,7 +149,6 @@ class VocabEntry(object):
         @returns sents_var: tensor of (max_sentence_length, batch_size, max_word_length)
         """
         ### YOUR CODE HERE for part 1e
-        ### TODO:
         ###     - Use `words2charindices()` from this file, which converts each character to its corresponding index in the
         ###       character-vocabulary.
         ###     - Use `pad_sents_char()` from utils.py, which pads all words to max_word_length of all words in the batch,
@@ -161,6 +160,10 @@ class VocabEntry(object):
         ###         https://pytorch.org/docs/stable/tensors.html#torch.Tensor.contiguous
         ###         https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
 
+        char_indices = self.words2charindices(sents)
+        padded_char_indices = pad_sents_char(char_indices, self.char_pad)
+        sents_var = torch.tensor(padded_char_indices).permute(1, 0, -1)
+        return sents_var
         ### END YOUR CODE
 
     def to_input_tensor(self, sents: List[List[str]], device: torch.device) -> torch.Tensor:
