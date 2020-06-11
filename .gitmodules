@@ -7,3 +7,6 @@
 [submodule "sortify"]
 	path = sortify
 	url = https://github.com/jonasmue/sortify.git
+[submodule "satisfaction.observer"]
+	path = satisfaction.observer
+	url = https://github.com/jonasmue/satisfaction.observer.git
