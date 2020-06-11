@@ -1,6 +1,6 @@
-[submodule "Natural Language Generation"]
-	path = natural-language-generation
-	url = https://github.com/jonasmue/natural-language-generation
 [submodule "CS224n"]
 	path = CS224n
-	url = https://github.com/jonasmue/CS224n
+	url = https://github.com/jonasmue/CS224n.git
+[submodule "natural-language-generation"]
+	path = natural-language-generation
+	url = https://github.com/jonasmue/natural-language-generation.git
