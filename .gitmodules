@@ -4,3 +4,6 @@
 [submodule "natural-language-generation"]
 	path = natural-language-generation
 	url = https://github.com/jonasmue/natural-language-generation.git
+[submodule "sortify"]
+	path = sortify
+	url = https://github.com/jonasmue/sortify.git
