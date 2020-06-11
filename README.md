@@ -1,2 +1,2 @@
-# nlp-playground
-Miscellaneous Natural Language Processing Projects
+# NLP Playground
+Miscellaneous Natural Language Processing Projects.
