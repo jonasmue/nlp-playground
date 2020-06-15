@@ -1,12 +1,16 @@
 [submodule "CS224n"]
 	path = CS224n
 	url = https://github.com/jonasmue/CS224n.git
+	branch = master
 [submodule "natural-language-generation"]
 	path = natural-language-generation
 	url = https://github.com/jonasmue/natural-language-generation.git
+	branch = master
 [submodule "sortify"]
 	path = sortify
 	url = https://github.com/jonasmue/sortify.git
+	branch = master
 [submodule "satisfaction.observer"]
 	path = satisfaction.observer
 	url = https://github.com/jonasmue/satisfaction.observer.git
+	branch = master
