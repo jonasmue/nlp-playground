@@ -14,3 +14,7 @@
 	path = satisfaction.observer
 	url = https://github.com/jonasmue/satisfaction.observer.git
 	branch = master
+[submodule "sentiment-labeling-tool"]
+	path = sentiment-labeling-tool
+	url = https://github.com/jonasmue/sentiment-labeling-tool
+	branch = master
